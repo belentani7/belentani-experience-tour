@@ -5,7 +5,7 @@
   "installCommand": "npm install",
   "functions": {
     "api/**/*.ts": {
-      "includeFiles": ["public/catalog.json", "data/**"]
+      "includeFiles": "public/catalog.json"
     }
   },
   "rewrites": [

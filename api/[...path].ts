@@ -115,9 +115,26 @@ const ORDER = [
   'UI Components',
 ];
 
+/** Recover the path after /api/ regardless of how Vercel exposes it. */
+function getRest(req: any): string {
+  const raw: string = typeof req.url === 'string' ? req.url : '';
+  const pathname = raw.split('?')[0] || '';
+  const fromUrl = pathname.replace(/^\/api\/?/, '');
+  if (fromUrl) {
+    try {
+      return decodeURIComponent(fromUrl);
+    } catch {
+      return fromUrl;
+    }
+  }
+  const param = req.query?.path;
+  if (Array.isArray(param)) return param.map(String).join('/');
+  if (typeof param === 'string') return param;
+  return '';
+}
+
 export default function handler(req: any, res: any) {
-  const segments = req.query?.path;
-  const rest = Array.isArray(segments) ? segments.join('/') : segments ?? '';
+  const rest = getRest(req);
   const url: string = typeof req.url === 'string' ? req.url : '';
   const qIndex = url.indexOf('?');
   const params = new URLSearchParams(qIndex >= 0 ? url.slice(qIndex + 1) : '');

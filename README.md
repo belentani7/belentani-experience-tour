@@ -4,6 +4,18 @@ A **living UI/UX library catalog** with a *thick glossy red glassmorphism* aesth
 It indexes **161 assets** — 11 in-house Belentani components plus **127 components and
 23 libraries** extracted from the [21st.dev community registry](https://21st.dev/community/components).
 
+## Live
+
+| Target | URL |
+|--------|-----|
+| GitHub (public) | https://github.com/belentani7/belentani-experience-tour |
+| Vercel (API + static) | https://belentani-experience-tour.vercel.app |
+| Cloudflare Pages (static) | https://belentani-experience-tour.pages.dev |
+
+Both hosts serve the same build. Vercel additionally runs the read-only catalog
+API in a serverless function; Cloudflare Pages is a pure static snapshot.
+Generation is local-only on both (it needs Python + a filesystem).
+
 ## Features
 
 - **Search** across titles, descriptions, categories, authors and feature tags.
@@ -93,6 +105,25 @@ on boot, so a missed schedule self-heals the next time it starts.
 
 `POST /api/generate` (optionally `?days=7` / `?force=true`) runs the generator;
 the "Generate now" button in the hero calls it.
+
+## Deploy
+
+The build bakes a static snapshot (`public/catalog.json`, `stats.json`,
+`categories.json`) via `npm run snapshot`, so the same artifact runs anywhere:
+
+```bash
+npm run build                                   # snapshot + vite + server bundle
+
+# Cloudflare Pages (static)
+wrangler pages deploy dist --project-name belentani-experience-tour --branch main
+
+# Vercel (static + serverless /api)
+vercel deploy --prod --yes
+```
+
+On Vercel the API is served by `api/[...path].ts` + `api/assets/[id].ts`, which
+read the snapshot with no relative imports (Vercel resolves this project as ESM).
+Pushing to `main` auto-deploys via the connected GitHub repo.
 
 ## Attribution
 
