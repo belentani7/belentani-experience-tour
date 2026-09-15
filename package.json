@@ -1,0 +1,49 @@
+{
+  "name": "living-ui-library",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Belentani experience tour assets — a living UI/UX library catalog with thick glossy red glassmorphism.",
+  "type": "module",
+  "scripts": {
+    "gen:registry": "node scripts/gen-registry.mjs",
+    "generate": "python generator/daily.py",
+    "generate:week": "python generator/daily.py --days 7",
+    "task:install": "powershell -ExecutionPolicy Bypass -File generator/install-task.ps1",
+    "task:uninstall": "powershell -ExecutionPolicy Bypass -File generator/install-task.ps1 -Uninstall",
+    "dev": "tsx server.ts",
+    "snapshot": "tsx scripts/snapshot.ts",
+    "build": "npm run snapshot && vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "start": "node dist/server.cjs",
+    "preview": "vite preview",
+    "clean": "rm -rf dist server.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "@gsap/react": "^2.1.2",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.46.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "react-syntax-highlighter": "^16.1.1",
+    "tailwind-merge": "^3.7.0",
+    "vite": "^6.2.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
+  }
+}

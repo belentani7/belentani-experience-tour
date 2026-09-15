@@ -1,0 +1,20 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+
+# Generated static snapshot (rebuilt by `npm run snapshot` on every deploy)
+public/catalog.json
+public/stats.json
+public/categories.json
+
+# NOTE: data/generated.jsonl is intentionally tracked — it is the append-only
+# history of generated assets and must never be lost.
