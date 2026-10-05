@@ -14,7 +14,8 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function AssetModal({ asset, onClose }: AssetModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -60,11 +61,22 @@ export function AssetModal({ asset, onClose }: AssetModalProps) {
     });
   };
 
-  const handleCopyPrompt = () => {
-    const prompt = `Belentani experience tour extraction: Create a new component in my project using the following React/Tailwind/GSAP code. Adapt it to the thick glossy red glassmorphism theme:\n\n\`\`\`tsx\n${asset.code}\n\`\`\``;
-    navigator.clipboard.writeText(prompt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  useEffect(() => () => {
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+  }, []);
+
+  const handleCopySource = async () => {
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
+      await navigator.clipboard.writeText(asset.code);
+      setCopyStatus('copied');
+    } catch {
+      setCopyStatus('failed');
+      return;
+    }
+
+    copyTimeoutRef.current = setTimeout(() => setCopyStatus('idle'), 2000);
   };
 
   const kindIcon =
@@ -131,11 +143,30 @@ export function AssetModal({ asset, onClose }: AssetModalProps) {
               </a>
             )}
             <button
-              onClick={handleCopyPrompt}
+              onClick={handleCopySource}
+              aria-label={
+                copyStatus === 'copied'
+                  ? 'Source code copied'
+                  : copyStatus === 'failed'
+                    ? 'Copy failed; allow clipboard access and try again'
+                    : 'Copy source code'
+              }
               className="flex items-center gap-2 bg-gradient-to-b from-white to-red-100 text-red-950 px-6 py-3 rounded-xl text-sm font-bold hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)] border border-white/50"
             >
-              {copied ? <Check size={18} className="text-green-600" /> : <Copy size={18} />}
-              <span className="hidden sm:inline">{copied ? 'Extraction Complete' : 'Copy Source Code'}</span>
+              {copyStatus === 'copied' ? (
+                <Check size={18} className="text-green-600" />
+              ) : copyStatus === 'failed' ? (
+                <Copy size={18} />
+              ) : (
+                <Copy size={18} />
+              )}
+              <span className="hidden sm:inline" aria-live="polite" role="status">
+                {copyStatus === 'copied'
+                  ? 'Source Copied'
+                  : copyStatus === 'failed'
+                    ? 'Copy failed — allow clipboard'
+                    : 'Copy Source Code'}
+              </span>
             </button>
             <button
               ref={closeRef}

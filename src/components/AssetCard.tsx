@@ -64,6 +64,14 @@ export function AssetCard({ asset, onClick, isBookmarked, onToggleBookmark, view
     if (asset.url) window.open(asset.url, '_blank', 'noopener,noreferrer');
   };
 
+  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   const BookmarkButton = (
     <button
       onClick={(e) => {
@@ -92,12 +100,7 @@ export function AssetCard({ asset, onClick, isBookmarked, onToggleBookmark, view
         onClick={onClick}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onClick();
-          }
-        }}
+        onKeyDown={handleCardKeyDown}
         className="group relative flex items-center gap-5 rounded-2xl overflow-hidden cursor-pointer glass-thick-red transition-all duration-300 p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
       >
         <div className="shimmer-overlay absolute inset-0 bg-gradient-to-br from-red-400/20 via-red-600/10 to-transparent opacity-0 pointer-events-none transition-opacity" />

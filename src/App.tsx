@@ -89,6 +89,7 @@ export default function App() {
   const [categories, setCategories] = useState<CategoryCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY);
   const [showBookmarks, setShowBookmarks] = useState(false);
@@ -102,13 +103,17 @@ export default function App() {
   const heroRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const loadMeta = useCallback(() => {
-    fetchWithFallback<CatalogStats>('/api/stats', '/stats.json')
-      .then(({ data }) => setStats(data))
-      .catch(() => undefined);
-    fetchWithFallback<CategoryCount[]>('/api/categories', '/categories.json')
-      .then(({ data }) => setCategories(data))
-      .catch(() => undefined);
+  const loadMeta = useCallback(async () => {
+    try {
+      const [statsResult, categoriesResult] = await Promise.all([
+        fetchWithFallback<CatalogStats>('/api/stats', '/stats.json'),
+        fetchWithFallback<CategoryCount[]>('/api/categories', '/categories.json'),
+      ]);
+      setStats(statsResult.data);
+      setCategories(categoriesResult.data);
+    } catch (err) {
+      console.error('Failed to load catalog metadata', err);
+    }
   }, []);
 
   const loadAssets = useCallback((): Promise<void> => {
@@ -143,14 +148,19 @@ export default function App() {
   );
 
   useEffect(() => {
-    loadAssets().then(() => loadMeta());
-    const saved = localStorage.getItem('library_bookmarks');
-    if (saved) {
-      try {
-        setBookmarkedIds(new Set(JSON.parse(saved)));
-      } catch {
-        localStorage.removeItem('library_bookmarks');
+    void loadAssets().then(() => loadMeta());
+    try {
+      const saved = localStorage.getItem('library_bookmarks');
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.every((id) => typeof id === 'string')) {
+          setBookmarkedIds(new Set(parsed));
+        } else {
+          localStorage.removeItem('library_bookmarks');
+        }
       }
+    } catch {
+      console.warn('Bookmarks could not be read or repaired in localStorage.');
     }
   }, [loadAssets, loadMeta]);
 
@@ -174,27 +184,32 @@ export default function App() {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      localStorage.setItem('library_bookmarks', JSON.stringify(Array.from(next)));
+      try {
+        localStorage.setItem('library_bookmarks', JSON.stringify(Array.from(next)));
+        setActionMessage(null);
+      } catch {
+        setActionMessage('Saved for this session only. Browser storage is unavailable.');
+      }
       return next;
     });
   }, []);
 
-  const generateNow = useCallback(() => {
-    if (!apiAvailable) return;
+  const generateNow = useCallback(async () => {
+    if (!apiAvailable || generating) return;
     setGenerating(true);
-    fetch('/api/generate', { method: 'POST' })
-      .then((r) => r.json().then((body) => ({ ok: r.ok, body })))
-      .then(({ ok, body }) => {
-        if (!ok) {
-          console.warn('generate failed:', body?.error);
-          return;
-        }
-        loadAssets();
-        loadMeta();
-      })
-      .catch(() => undefined)
-      .finally(() => setGenerating(false));
-  }, [apiAvailable, loadAssets, loadMeta]);
+    try {
+      const response = await fetch('/api/generate', { method: 'POST' });
+      const body = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(body.error || `Generation failed (${response.status})`);
+      await loadAssets();
+      await loadMeta();
+      setActionMessage('Today’s asset is ready.');
+    } catch (err) {
+      setActionMessage(err instanceof Error ? err.message : 'Generation failed. Check the local generator.');
+    } finally {
+      setGenerating(false);
+    }
+  }, [apiAvailable, generating, loadAssets, loadMeta]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -469,6 +484,11 @@ export default function App() {
                 </div>
               </div>
 
+              {actionMessage && (
+                <p className="text-sm text-amber-200" role="status">
+                  {actionMessage}
+                </p>
+              )}
               {hasActiveFilters && (
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
                   {searchQuery.trim() && (
