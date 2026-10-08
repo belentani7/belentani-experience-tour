@@ -1,13 +1,11 @@
-# Security
+# Como contribuir
 
-## Reportar una vulnerabilidad
+1. Crea una rama con prefijo `feat/`, `fix/` o `docs/`.
+2. Manten los commits pequenos y con un mensaje claro.
+3. Abre un Pull Request describiendo el cambio y como se prueba.
+4. Revisa que el CI pasa antes de pedir revision.
 
-No abras un issue publico para reportar una vulnerabilidad. Usa el canal privado
-de seguridad de GitHub en la pestana Security de este repositorio, o escribe al
-contacto indicado abajo.
+## Reportar problemas
 
-## Buenas practicas
-
-- Nunca commitees claves, tokens ni ficheros `.env`.
-- Usa variables de entorno y ejemplos en `.env.example`.
-- Manten las dependencias actualizadas.
+Usa las plantillas de issue. Un reporte util incluye pasos para reproducir,
+entorno y esperado frente a obtenido.

@@ -1,10 +1,13 @@
-## Que cambia
+# Security
 
-## Por que
+## Reportar una vulnerabilidad
 
-## Como se prueba
+No abras un issue publico para reportar una vulnerabilidad. Usa el canal privado
+de seguridad de GitHub en la pestana Security de este repositorio, o escribe al
+contacto indicado abajo.
 
-## Checklist
-- [ ] El build pasa
-- [ ] Hay tests o se explica por que no aplican
-- [ ] La documentacion esta actualizada
+## Buenas practicas
+
+- Nunca commitees claves, tokens ni ficheros `.env`.
+- Usa variables de entorno y ejemplos en `.env.example`.
+- Manten las dependencias actualizadas.

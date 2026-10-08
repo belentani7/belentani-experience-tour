@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Asset } from '../types';
 import { Code2, Check, Copy, X, TerminalSquare, ExternalLink, BadgeCheck, Library, Box, WandSparkles } from 'lucide-react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
+import vscDarkPlus from 'react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus';
 import gsap from 'gsap';
+SyntaxHighlighter.registerLanguage('tsx', tsx);
 
 interface AssetModalProps {
   asset: Asset;
@@ -21,6 +23,8 @@ export function AssetModal({ asset, onClose }: AssetModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeRef.current?.focus();
 
@@ -34,12 +38,20 @@ export function AssetModal({ asset, onClose }: AssetModalProps) {
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
+      if (e.key === 'Escape') { e.preventDefault(); handleClose(); }
+      if (e.key !== 'Tab') return;
+      const targets = modalRef.current?.querySelectorAll<HTMLElement>('button, a[href], input, [tabindex="0"]');
+      if (!targets?.length) { e.preventDefault(); return; }
+      const first = targets[0], last = targets[targets.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     };
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+      gsap.killTweensOf([bgRef.current, modalRef.current].filter(Boolean));
       window.removeEventListener('keydown', onKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

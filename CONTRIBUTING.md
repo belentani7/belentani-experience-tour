@@ -1,11 +1,18 @@
-# Como contribuir
+root = true
 
-1. Crea una rama con prefijo `feat/`, `fix/` o `docs/`.
-2. Manten los commits pequenos y con un mensaje claro.
-3. Abre un Pull Request describiendo el cambio y como se prueba.
-4. Revisa que el CI pasa antes de pedir revision.
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
 
-## Reportar problemas
+[*.py]
+indent_size = 4
 
-Usa las plantillas de issue. Un reporte util incluye pasos para reproducir,
-entorno y esperado frente a obtenido.
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab

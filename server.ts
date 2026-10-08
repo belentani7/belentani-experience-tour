@@ -22,7 +22,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, process.env.HOST ?? '127.0.0.1', () => {
     console.log(`Server running on http://localhost:${PORT}`);
     // Safety net: make sure today's asset exists even if the scheduler missed it.
     if (process.env.BELENTANI_AUTOGEN !== 'off') {
