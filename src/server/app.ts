@@ -3,6 +3,7 @@ import type { Asset } from '../types';
 import { ALL_ASSETS, activeCategories, categoryCounts, computeStats } from '../data/catalog';
 import { loadGenerated } from './store';
 import { runGenerator } from './generator';
+import { generationArguments, isLocalGenerationRequest } from './generation-policy';
 
 /** Static catalog + everything appended by the daily generator. */
 export function getAllAssets(): Asset[] {
@@ -66,7 +67,7 @@ export function filterAssets(query: Record<string, unknown>): Asset[] {
  * API-only Express app (no frontend, no listen). Shared by the local server
  * (server.ts) and the Vercel serverless function (api/index.ts).
  */
-export function createApp(): express.Express {
+export function createApp(generate: typeof runGenerator = runGenerator): express.Express {
   const app = express();
   app.use(express.json());
 
@@ -103,16 +104,25 @@ export function createApp(): express.Express {
       });
       return;
     }
-    const days = Math.min(Math.max(Number(req.query.days ?? 1) || 1, 1), 31);
-    const force = req.query.force === 'true';
-    const args = days > 1 ? ['--days', String(days)] : [];
-    if (force) args.push('--force');
-    const result = await runGenerator(args);
-    if (!result.ok) {
-      res.status(500).json({ ok: false, error: result.error });
+    if (!isLocalGenerationRequest(req.socket.remoteAddress, req.get('host'), req.get('origin'))) {
+      res.status(403).json({ ok: false, error: 'Generation is available only from this local app.' });
       return;
     }
-    res.json({ ok: true, output: result.output, stats: computeStats(getAllAssets()) });
+    const args = generationArguments(req.query as Record<string, unknown>);
+    if (!args) {
+      res.status(400).json({ ok: false, error: 'days must be an integer from 1 to 31; force must be true or false.' });
+      return;
+    }
+    try {
+      const result = await generate(args);
+      if (!result.ok) {
+        res.status(result.busy ? 409 : 500).json({ ok: false, error: result.error });
+        return;
+      }
+      res.json({ ok: true, output: result.output, stats: computeStats(getAllAssets()) });
+    } catch {
+      res.status(500).json({ ok: false, error: 'Generation failed. You can retry.' });
+    }
   });
 
   return app;

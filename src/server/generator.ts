@@ -13,6 +13,8 @@ function projectRoot(): string {
 export interface GenerateResult {
   ok: boolean;
   skipped?: boolean;
+  busy?: boolean;
+  unavailable?: boolean;
   output: string;
   error?: string;
 }
@@ -29,7 +31,7 @@ function run(executable: string, args: string[], cwd: string): Promise<GenerateR
   return new Promise((resolve) => {
     execFile(executable, args, { cwd, windowsHide: true, timeout: 60_000 }, (error, stdout, stderr) => {
       if (error) {
-        resolve({ ok: false, output: stdout ?? '', error: stderr || error.message });
+        resolve({ ok: false, unavailable: (error as NodeJS.ErrnoException).code === 'ENOENT', output: stdout ?? '', error: stderr || error.message });
         return;
       }
       resolve({ ok: true, output: (stdout ?? '').trim() });
@@ -38,7 +40,16 @@ function run(executable: string, args: string[], cwd: string): Promise<GenerateR
 }
 
 /** Run generator/daily.py with the given extra args. Tries a few Python names. */
+let running = false;
+
 export async function runGenerator(extraArgs: string[] = []): Promise<GenerateResult> {
+  if (running) return { ok: false, busy: true, output: '', error: 'Generation is already running. Try again when it finishes.' };
+  running = true;
+  try { return await executeGenerator(extraArgs); }
+  finally { running = false; }
+}
+
+async function executeGenerator(extraArgs: string[]): Promise<GenerateResult> {
   const root = projectRoot();
   const script = path.join(root, 'generator', 'daily.py');
   if (!fs.existsSync(script)) {
@@ -49,6 +60,9 @@ export async function runGenerator(extraArgs: string[] = []): Promise<GenerateRe
   for (const executable of PYTHON_CANDIDATES) {
     const result = await run(executable, [script, ...extraArgs], root);
     if (result.ok) return result;
+    // A script error may happen after a write: never execute it again through
+    // a different Python alias. Only a missing executable permits fallback.
+    if (!result.unavailable) return result;
     lastError = result.error ?? lastError;
   }
   return { ok: false, output: '', error: lastError };

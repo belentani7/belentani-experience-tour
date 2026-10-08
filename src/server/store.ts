@@ -42,7 +42,10 @@ export function loadGenerated(): Asset[] {
     if (!trimmed) continue;
     try {
       const parsed = JSON.parse(trimmed) as Asset;
-      if (!parsed || typeof parsed.id !== 'string') continue;
+      if (!parsed || typeof parsed.id !== 'string' ||
+          !['title', 'category', 'description', 'source', 'code'].every(key => typeof parsed[key as keyof Asset] === 'string') ||
+          (parsed.author !== undefined && typeof parsed.author !== 'string') ||
+          (parsed.tags !== undefined && (!Array.isArray(parsed.tags) || !parsed.tags.every(tag => typeof tag === 'string')))) continue;
       byId.set(parsed.id, parsed);
     } catch {
       // Malformed line: ignore on read. The store stays append-only.
