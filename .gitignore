@@ -1,39 +1,38 @@
+# Dependencies
 node_modules/
+bower_components/
+
+# Production
 build/
 dist/
-coverage/
-.DS_Store
-*.log
-.env*
-!.env.example
 
-# Python
-__pycache__/
-*.pyc
+docs/
 
-# Generated static snapshot (rebuilt by `npm run snapshot` on every deploy)
-public/catalog.json
-public/stats.json
-public/categories.json
-
-# NOTE: data/generated.jsonl is intentionally tracked - it is the append-only
-# history of generated assets and must never be lost.
-
-.vercel
-.env*
-
-# --- guardias-sinc-2026-10-08 (auto) ---
-node_modules/
+# Misc
 .env
-.env.*
-!.env.example
-*.pem
-*.key
-.next/
-.nuxt/
-.turbo/
-dist/
-build/
-coverage/
-*.log
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Tests
+.cypress/
+
+# Cache
+.cache/
