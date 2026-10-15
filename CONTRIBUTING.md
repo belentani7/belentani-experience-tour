@@ -1,18 +1,15 @@
-root = true
+# Contributing to Belentani Project
+## Getting Started
+Fork, clone, install (npm install / pip install -r requirements.txt), create branch.
 
-[*]
-charset = utf-8
-end_of_line = lf
-insert_final_newline = true
-trim_trailing_whitespace = true
-indent_style = space
-indent_size = 2
+## Development Workflow
+Run lint/test/build. Follow conventional commits.
 
-[*.py]
-indent_size = 4
+## Pull Request Process
+Submit PR with description, link issues.
 
-[*.md]
-trim_trailing_whitespace = false
+## Code Standards
+Use ESLint/Prettier (JS) or ruff/black (Python). Write tests.
 
-[Makefile]
-indent_style = tab
+## Reporting Issues
+Use .github/ISSUE_TEMPLATE/bug_report.yml.
