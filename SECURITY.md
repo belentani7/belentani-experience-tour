@@ -1,11 +1,25 @@
-# Como contribuir
+# Security Policy
 
-1. Crea una rama con prefijo `feat/`, `fix/` o `docs/`.
-2. Manten los commits pequenos y con un mensaje claro.
-3. Abre un Pull Request describiendo el cambio y como se prueba.
-4. Revisa que el CI pasa antes de pedir revision.
+## Reporting a Vulnerability
 
-## Reportar problemas
+Please report security vulnerabilities via email to belentani7pedro@gmail.com.
 
-Usa las plantillas de issue. Un reporte util incluye pasos para reproducir,
-entorno y esperado frente a obtenido.
+## Code Scanning
+
+This project uses GitHub CodeQL for automated security scanning. All security issues detected by CodeQL will be addressed with priority.
+
+## Dependabot
+
+Dependabot alerts security vulnerabilities in dependencies. Dependabot security updates will be accepted via Pull Request.
+
+## Secret Protection
+
+GitHub Secret Protection scans for hardcoded secrets. Do not commit API keys, tokens, or passwords to this repository.
+
+## Advanced Security
+
+Enable GitHub Advanced Security for:
+- Dependabot alerts
+- CodeQL analysis
+- Secret scanning
+- Push protection
